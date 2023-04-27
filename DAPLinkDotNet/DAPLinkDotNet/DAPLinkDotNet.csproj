@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+	  <LangVersion>latest</LangVersion>
+	  <RepositoryUrl>https://github.com/chenxuuu/DAPLink.Net.git</RepositoryUrl>
+	  <RepositoryType>git</RepositoryType>
+	  <PackageProjectUrl>https://github.com/chenxuuu/DAPLink.Net.git</PackageProjectUrl>
+	  <Copyright>GPL v3</Copyright>
+	  <Description>DAPLink library based on LibUsbDotNet</Description>
+	  <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LibUsbDotNet" Version="3.0.102-alpha" />
+  </ItemGroup>
+
+</Project>
