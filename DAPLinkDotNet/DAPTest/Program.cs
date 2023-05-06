@@ -6,9 +6,11 @@ namespace DAPTest
     {
         static void Main(string[] args)
         {
-            var list = UsbDevice.GetList();
+            var list = DAPLink.GetList();
             foreach (var item in list)
                 Console.WriteLine(item.ToString());
+            Console.WriteLine("Auto connect first device...");
+
         }
     }
 }
