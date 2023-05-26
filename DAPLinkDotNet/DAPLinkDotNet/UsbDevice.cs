@@ -185,17 +185,17 @@ namespace DAPLinkDotNet
                                 var readLength = 0;
                                 var reader =
                                     device.OpenEndpointReader(
-                                        (LibUsbDotNet.Main.ReadEndpointID)((int)LibUsbDotNet.Main.ReadEndpointID.Ep01 + this.RecvEP - 1),
+                                        (LibUsbDotNet.Main.ReadEndpointID)this.RecvEP,
                                         1024);
                                 var writer =
                                     device.OpenEndpointWriter(
-                                        (LibUsbDotNet.Main.WriteEndpointID)((int)LibUsbDotNet.Main.WriteEndpointID.Ep01 + this.SendEP - 1));
+                                        (LibUsbDotNet.Main.WriteEndpointID)this.SendEP);
                                 while (true)
                                 {
                                     try
                                     {
                                         //读数据
-                                        var err = reader.Transfer(temp, 0, temp.Length, timeout, out readLength);
+                                        var err = reader.Read(temp, timeout, out readLength);
                                         switch(err)
                                         {
                                             case Error.Success:
@@ -232,9 +232,14 @@ namespace DAPLinkDotNet
                                                 toSendBuffer.RemoveAt(0);
                                                 try
                                                 {
-                                                    writer.Write(data, timeout, out var writeLength);
+                                                    //var writeLength = 0;
+                                                    var serr = writer.Write(data, timeout, out _);
+                                                    //Console.WriteLine($"write len {writeLength} {serr}");
                                                 }
-                                                catch { }
+                                                catch
+                                                {
+                                                    ErrorReceived.Invoke(this, DAPError.Send);
+                                                }
                                             }
                                         }
                                         if(needClose) //主动关闭

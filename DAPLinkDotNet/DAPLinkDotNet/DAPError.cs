@@ -7,5 +7,7 @@ namespace DAPLinkDotNet
     public enum DAPError
     {
         Closed,
+        Send,
+
     }
 }
