@@ -27,6 +27,7 @@ namespace DAPTest
 
 
             Console.WriteLine($"open: {device.Open()}");
+            Console.WriteLine(device.ToString());
 
             //https://arm-software.github.io/CMSIS_5/DAP/html/group__DAP__genCommands__gr.html
             while (true)

@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Text;
 using System.Linq;
 using System.Threading;
+using HidLibrary;
 
 namespace DAPLinkDotNet
 {
@@ -114,6 +115,7 @@ namespace DAPLinkDotNet
                 toSendBuffer.Clear();
             _bytesToRead = 0;
             IsOpen = false;
+            needClose = false;
         }
 
         private bool needClose = false;
@@ -137,7 +139,92 @@ namespace DAPLinkDotNet
             {
                 case DeviceType.Hid:
                     {
-
+                        //todo
+                        return false;
+                        //var HidDeviceList = HidDevices.Enumerate(this.Vid, this.Pid).ToList();
+                        //var matched = false;
+                        //foreach (var device in HidDeviceList)
+                        //{
+                        //    if (matched)
+                        //        break;
+                        //    var buff = new byte[1024];
+                        //    device.ReadSerialNumber(out buff);
+                        //    for(int i=0;i<buff.Length;i+=2)
+                        //        buff[i/2] = buff[i];
+                        //    var SerialNumber = Encoding.Default.GetString(buff);
+                        //    SerialNumber = SerialNumber.Substring(0,SerialNumber.IndexOf('\0'));
+                        //    //序列号不匹配
+                        //    if (SerialNumber != this.SerialNumber)
+                        //        continue;
+                        //    //匹配上了
+                        //    matched = true;
+                        //    IsOpen = true;
+                        //    new Thread(() =>
+                        //    {
+                        //        needClose = false;
+                        //        var timeout = 1;
+                        //        while (true)
+                        //        {
+                        //            try
+                        //            {
+                        //                //读数据
+                                        
+                        //                var err = device.Read(0);
+                        //                if (err.Status == HidDeviceData.ReadStatus.NotConnected)
+                        //                {
+                        //                    //断了，退出吧
+                        //                    Closed();
+                        //                    return;
+                        //                }
+                        //                if (err.Data.Length > 0)//有数据了，放缓冲区里
+                        //                {
+                        //                    var readLength = err.Data.Length;
+                        //                    Console.WriteLine($"recv len {readLength}");
+                        //                    lock (buffer)
+                        //                    {
+                        //                        if (BytesToRead + readLength > buffer.Length)
+                        //                            readLength = buffer.Length - _bytesToRead;
+                        //                        Array.Copy(err.Data, 0, buffer, _bytesToRead, readLength);
+                        //                        _bytesToRead += readLength;
+                        //                    }
+                        //                    DataReceived?.Invoke(this, _bytesToRead);
+                        //                }
+                        //                else
+                        //                {
+                        //                    Thread.Sleep(timeout);
+                        //                }
+                        //                lock (toSendBuffer)//发数据
+                        //                {
+                        //                    while (toSendBuffer.Count > 0)
+                        //                    {
+                        //                        var data = toSendBuffer[0];
+                        //                        toSendBuffer.RemoveAt(0);
+                        //                        var serr = device.Write(data, 1000);
+                        //                        if(!serr)
+                        //                            ErrorReceived.Invoke(this, DAPError.Send);
+                        //                    }
+                        //                }
+                        //                if (needClose) //主动关闭
+                        //                {
+                        //                    Closed();
+                        //                    ErrorReceived?.Invoke(this, DAPError.Closed);
+                        //                    return;
+                        //                }
+                        //            }
+                        //            catch (Exception e)
+                        //            {
+                        //                Closed();
+                        //                ErrorReceived?.Invoke(this, DAPError.Closed);
+                        //                Console.WriteLine(e);
+                        //                break;
+                        //            }
+                        //        }
+                        //    }).Start();
+                        //}
+                        //if (!matched)//没匹配上或打开失败了
+                        //{
+                        //    return false;
+                        //}
                     }
                     break;
                 case DeviceType.WinUsb:
@@ -161,7 +248,10 @@ namespace DAPLinkDotNet
                             {
                                 device.ResetDevice();
                                 if(!device.TryOpen())
-                                    return false;
+                                {
+                                    matched = false;
+                                    break;//没打开
+                                }
                                 UsbConfigInfo configInfo = device.Configs[0];
                                 ReadOnlyCollection<UsbInterfaceInfo> interfaceList = configInfo.Interfaces;
                                 if (interfaceList.Count < this.Interface - 1)
@@ -172,7 +262,8 @@ namespace DAPLinkDotNet
                             }
                             catch
                             {
-                                return false;
+                                matched = false;
+                                break;//没打开
                             }
                             this.IsOpen = true;//开了
                             UsbConfigInfo configInfo1 = device.Configs[0];
@@ -233,12 +324,12 @@ namespace DAPLinkDotNet
                                                 try
                                                 {
                                                     //var writeLength = 0;
-                                                    var serr = writer.Write(data, timeout, out _);
+                                                    var serr = writer.Write(data, 1000, out _);
                                                     //Console.WriteLine($"write len {writeLength} {serr}");
                                                 }
                                                 catch
                                                 {
-                                                    ErrorReceived.Invoke(this, DAPError.Send);
+                                                    ErrorReceived?.Invoke(this, DAPError.Send);
                                                 }
                                             }
                                         }
@@ -253,11 +344,22 @@ namespace DAPLinkDotNet
                                     }
                                     catch(Exception e)
                                     {
+                                        try { device.Close(); } catch { }
+                                        allDevices.Dispose();
+                                        context.Dispose();
+                                        Closed();
+                                        ErrorReceived?.Invoke(this, DAPError.Closed);
                                         Console.WriteLine(e);
                                         break;
                                     }
                                 }
                             }).Start();
+                        }
+                        if (!matched)//没匹配上或打开失败了
+                        {
+                            allDevices.Dispose();
+                            context.Dispose();
+                            return false;
                         }
                     }
                     break;
