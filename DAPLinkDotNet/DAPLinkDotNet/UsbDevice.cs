@@ -305,7 +305,7 @@ namespace DAPLinkDotNet
                                         }
                                         if(readLength > 0)//有数据了，放缓冲区里
                                         {
-                                            Console.WriteLine($"recv len {readLength}");
+                                            //Console.WriteLine($"recv len {readLength}");
                                             lock(buffer)
                                             {
                                                 if (BytesToRead + readLength > buffer.Length)

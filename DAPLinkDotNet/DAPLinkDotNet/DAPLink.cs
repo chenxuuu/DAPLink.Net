@@ -14,7 +14,10 @@ using System.Xml.Linq;
 
 namespace DAPLinkDotNet
 {
-    public class DAPLink
+    /// <summary>
+    /// DAPLink Object
+    /// </summary>
+    public partial class DAPLink
     {
         /// <summary>
         /// Get DAPLink device list
@@ -86,8 +89,49 @@ namespace DAPLinkDotNet
         /// 新建一个daplink设备
         /// </summary>
         /// <param name="usbDevice">usb设备</param>
-        DAPLink(UsbDevice usbDevice) => device = usbDevice;
+        public DAPLink(UsbDevice usbDevice)
+        {
+            device = usbDevice;
+            usbDevice.ConnectionClosed += (a, b) => ConnectionClosed?.Invoke(a, b);
+            usbDevice.ErrorReceived += (a, b) => ErrorReceived?.Invoke(a, b);
+        }
 
         public override string ToString() => device.ToString();
+
+        public bool IsOpen
+        {
+            get => this.device.IsOpen;
+        }
+
+        public bool Open() => this.device.Open();
+        public void Close() => this.device.Close();
+
+        public event EventHandler<bool> ConnectionClosed;
+        public event EventHandler<DAPError> ErrorReceived;
+
+        /// <summary>
+        /// 收发数据
+        /// </summary>
+        /// <param name="toSend">要发送的数据</param>
+        /// <param name="timeout_ms">等待时间</param>
+        /// <param name="buff">接收数据的缓冲区</param>
+        /// <param name="buff_offset">缓冲区偏移</param>
+        /// <returns>收到数据的长度</returns>
+        /// <exception cref="Exception">串口未打开</exception>
+        public int SendRecv(byte[] toSend, byte[] buff, int buff_offset = 0, int timeout_ms = 100)
+        {
+            if(!this.device.IsOpen)
+                throw new Exception("device not open");
+            EventWaitHandle waitData = new AutoResetEvent(false);
+            waitData.Reset();
+            EventHandler<int> cb = (e, len) => waitData.Set();
+            device.DataReceived += cb;
+            var sendLen = this.device.Write(toSend, 0, toSend.Length);
+            var waitResult = waitData.WaitOne(timeout_ms);
+            device.DataReceived -= cb;
+            if (!waitResult)//超时没收到那就是0
+                return 0;
+            return this.device.Read(buff, buff_offset, device.BytesToRead);
+        }
     }
 }
