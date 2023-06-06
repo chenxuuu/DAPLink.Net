@@ -15,17 +15,25 @@ namespace DAPTest
 
             device.Open();
 
+            Console.WriteLine(device.SWJPins(0,0,0));
+   //         Console.WriteLine(device.GetSerialNumber());
+   //         Console.WriteLine(device.GetCMSIS_DAPProtocolVersion());
+   //         Console.WriteLine(device.GetTargetDeviceVendor());
+   //         Console.WriteLine(device.GetTargetDeviceName());
+   //         Console.WriteLine(device.GetTargetBoardVendor());
+   //         Console.WriteLine(device.GetTargetBoardName());
+   //         Console.WriteLine(device.GetProductFirmwareVersion());
+   //         Console.WriteLine(device.GetCapabilities());
+   //         Console.WriteLine(device.GetMaximumPacketCount());
+   //         Console.WriteLine(device.GetMaximumPacketSize());
 
-            Console.WriteLine(device.GetSerialNumber());
-            Console.WriteLine(device.GetCMSIS_DAPProtocolVersion());
-            Console.WriteLine(device.GetTargetDeviceVendor());
-            Console.WriteLine(device.GetTargetDeviceName());
-            Console.WriteLine(device.GetTargetBoardVendor());
-            Console.WriteLine(device.GetTargetBoardName());
-            Console.WriteLine(device.GetProductFirmwareVersion());
-            Console.WriteLine(device.GetCapabilities());
-            Console.WriteLine(device.GetMaximumPacketCount());
-            Console.WriteLine(device.GetMaximumPacketSize());
+   //         while (true)
+   //         {
+   //             device.SetHostStatus(0, false);
+   //             Thread.Sleep(10);
+   //             device.SetHostStatus(0, true);
+   //             Thread.Sleep(10);
+			//}
             //var recvBuff = new byte[1024];
             //while (true)
             //{
